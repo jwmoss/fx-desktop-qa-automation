@@ -74,6 +74,7 @@
   
         - name: Check Firefox version
           run: |
-            $version = Get-Item -Path "C:\Program Files\Custom Firefox\firefox.exe" | Select-Object -ExpandProperty VersionInfo
-            $version.FileVersion
+            Start-Process -FilePath "C:\Program Files\Custom Firefox\firefox.exe" -ArgumentList "--version" -Wait -NoNewWindow
+            #$version = Get-Item -Path "C:\Program Files\Custom Firefox\firefox.exe" | Select-Object -ExpandProperty VersionInfo
+            #$version.FileVersion
           shell: pwsh
