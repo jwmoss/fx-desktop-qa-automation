@@ -94,3 +94,9 @@
             rm artifacts/assets -r -Force
             mv artifacts/* artifacts-win
             exit $env:TEST_EXIT_CODE
+        - name: Upload artifacts
+          if: always()
+          uses: actions/upload-artifact@v4
+          with:
+            name: artifacts-win
+            path: artifacts-win
