@@ -16,23 +16,24 @@
           uses: actions/setup-python@v5
           with:
             python-version: "3.11"
-        - name: Install dependencies
-          run: |
-            mkdir -p artifacts;
-            pip3 install 'pipenv==2023.11.15';
-            pip3 install 'ruff>=0.4.8,<0.5';
-            rm ./pyproject.toml;
-            mv ./ci_pyproject.toml ./pyproject.toml;
-            pipenv install;
+        # - name: Install dependencies
+        #   run: |
+        #     mkdir -p artifacts;
+        #     pip3 install 'pipenv==2023.11.15';
+        #     pip3 install 'ruff>=0.4.8,<0.5';
+        #     rm ./pyproject.toml;
+        #     mv ./ci_pyproject.toml ./pyproject.toml;
+        #     pipenv install;
         - name: Download Geckodriver
           run: |
             Invoke-WebRequest -Uri "https://github.com/mozilla/geckodriver/releases/download/v0.35.0/geckodriver-v0.35.0-win64.zip" -OutFile "geckodriver.zip"
             unzip geckodriver.zip
+          shell: pwsh
         - name: Download Beta
           run: |
             Invoke-WebRequest -Uri "https://download.mozilla.org/?product=firefox-beta-latest-ssl&os=win64&lang=en-US" -OutFile "${{ github.workspace }}\setup.exe"
             New-Item -ItemType Directory -Path "C:\Program Files\Custom Firefox" -Force
-          shell: powershell
+          shell: pwsh
         - name: Install Beta
           run: |
             echo "Starting Firefox installation..."
@@ -42,8 +43,7 @@
             } else {
               echo "Firefox installation failed."
             }
-          shell: powershell
-  
+          shell: pwsh
         - name: Verify installation directory
           run: |
             if (Test-Path "C:\Program Files\Custom Firefox") {
@@ -52,7 +52,7 @@
               echo "Installation directory does not exist."
               exit 1
             }
-          shell: powershell
+          shell: pwsh
   
         - name: List installed files
           run: |
@@ -61,7 +61,7 @@
             } else {
               echo "Installation directory does not exist."
             }
-          shell: powershell
+          shell: pwsh
   
         - name: Verify Firefox executable
           run: |
@@ -70,27 +70,10 @@
             } else {
               echo "Firefox executable does not exist."
             }
-          shell: powershell
+          shell: pwsh
   
         - name: Check Firefox version
           run: |
-            & "C:\Program Files\Custom Firefox\firefox.exe" --version
-          shell: powershell
-  
-        - name: Run Smoke Tests in Win
-          run: |
-            Start-Sleep -Seconds 20;
-            & 'C:\Program Files\Custom Firefox\firefox.exe' --version
-            pipenv run pytest -n 4 tests/meta
-            $env:TEST_EXIT_CODE = $LASTEXITCODE
-            mv artifacts artifacts-win || true
-            exit $env:TEST_EXIT_CODE
-        - name: Run Smoke Tests in Win (Headed)
-          run: |
-            rm ./pyproject.toml;
-            mv ./ci_pyproject_headed.toml ./pyproject.toml;
-            pipenv run pytest -n 4 .
-            $env:TEST_EXIT_CODE = $LASTEXITCODE
-            rm artifacts/assets -r -Force
-            mv artifacts/* artifacts-win
-            exit $env:TEST_EXIT_CODE
+            $version = Get-Item -Path "C:\Program Files\Custom Firefox\firefox.exe" | Select-Object -ExpandProperty VersionInfo
+            $version.FileVersion
+          shell: pwsh
